@@ -44,13 +44,13 @@ describe('i18n.rest', function () {
 
         function testHttpCallsWithPrefix(prefix) {
             it('on execute perform GET request with the code', function () {
-                $httpBackend.expect('GET', prefix + 'api/i18n/translate?key=' + code).respond(200);
+                $httpBackend.expect('GET', prefix + 'api/i18n/translate?key=' + encodeURIComponent(code)).respond(200);
                 context.code = code;
                 reader(context);
                 $httpBackend.flush();
             });
             it('on execute perform GET request with the code and namespace', function () {
-                $httpBackend.expect('GET', prefix + 'api/i18n/translate?namespace=' + namespace + '&key=' + code).respond(200);
+                $httpBackend.expect('GET', prefix + 'api/i18n/translate?namespace=' + namespace + '&key=' + encodeURIComponent(code)).respond(200);
                 context.namespace = namespace;
                 context.code = code;
                 reader(context);
@@ -84,6 +84,14 @@ describe('i18n.rest', function () {
         describe('with config.initialized notification received without baseUri', function () {
             beforeEach(function () {
                 topics['config.initialized'](config);
+            });
+
+            testHttpCallsWithPrefix('');
+        });
+
+        describe('code should be uri encoded', function () {
+            beforeEach(function () {
+                code = 'Foo & Bar';
             });
 
             testHttpCallsWithPrefix('');
