@@ -3,7 +3,17 @@ angular.module('i18n.gateways', [])
     .factory('i18nFetchMessage', ['$http', function ($http) {
         return I18nFetchMessageFactory($http)
     }])
-    .factory('i18nMessageWriter', ['$http', 'restServiceHandler', 'topicRegistry', I18nMessageWriterFactory]);
+    .factory('i18nMessageWriter', ['$http', 'restServiceHandler', 'topicRegistry', I18nMessageWriterFactory])
+    .run(function(installRestDefaultHeaderMapper, topicRegistry) {
+        var locale = 'default';
+        topicRegistry.subscribe('i18n.locale', function(msg) {
+            locale = msg;
+        });
+        installRestDefaultHeaderMapper(function(headers) {
+            headers['accept-language'] = locale;
+            return headers;
+        })
+    });
 
 function I18nMessageReaderFactory(i18nFetchMessage, topicRegistry) {
     var baseUri = '';
@@ -49,7 +59,6 @@ function I18nMessageWriterFactory($http, restServiceHandler, topicRegistry) {
             data: payload,
             withCredentials: true
         };
-        if (ctx.locale) presenter.params.headers = {'Accept-Language': ctx.locale};
         restServiceHandler(presenter);
     }
 }
