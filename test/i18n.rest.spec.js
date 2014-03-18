@@ -1,14 +1,17 @@
 describe('i18n.rest', function () {
-    var $httpBackend, topics;
+    var $httpBackend, topics, http;
     var config;
+    var i18nCache;
 
     beforeEach(module('i18n.gateways'));
     beforeEach(module('rest.client'));
     beforeEach(module('notifications'));
-    beforeEach(inject(function ($injector, topicRegistryMock) {
+    beforeEach(inject(function ($injector, topicRegistryMock, $http, $cacheFactory) {
         $httpBackend = $injector.get('$httpBackend');
         topics = topicRegistryMock;
         config  = {};
+        http = $http;
+        i18nCache = $cacheFactory.get('i18n');
     }));
     afterEach(function () {
         $httpBackend.verifyNoOutstandingExpectation();
@@ -20,6 +23,10 @@ describe('i18n.rest', function () {
 
         it('then a default header mapper should be installed', inject(function(installRestDefaultHeaderMapper) {
             expect(installRestDefaultHeaderMapper.calls[0].args[0]).toBeDefined();
+        }));
+
+        it('i18n cache is initialized', inject(function ($cacheFactory) {
+            expect($cacheFactory.get('i18n')).toBeDefined();
         }));
 
         describe('given locale is not broadcasted', function() {
@@ -38,8 +45,11 @@ describe('i18n.rest', function () {
         });
 
         describe('given locale is broadcasted', function() {
+
             beforeEach(inject(function(installRestDefaultHeaderMapper, topicRegistryMock) {
                 headers = {};
+                i18nCache.put('key', 'value');
+
                 topicRegistryMock['i18n.locale']('locale');
                 returnedHeaders = installRestDefaultHeaderMapper.calls[0].args[0](headers);
             }));
@@ -50,6 +60,10 @@ describe('i18n.rest', function () {
 
             it('then returned headers are source headers', function() {
                 expect(returnedHeaders).toEqual(headers);
+            });
+
+            it('then i18n cache is cleared', function () {
+                expect(i18nCache.info()).toEqual({id: 'i18n', size: 0});
             });
         });
 
@@ -108,6 +122,14 @@ describe('i18n.rest', function () {
                 reader(context, onSuccess, onError);
                 $httpBackend.flush();
                 expect(receivedError).toEqual(true);
+            });
+            it('requests should be cached', function () {
+                spyOn(http, 'get').andCallThrough();
+                $httpBackend.expect('GET', '').respond(200);
+                reader(context);
+                $httpBackend.flush();
+
+                expect(http.get.mostRecentCall.args[1].cache).toEqual(i18nCache);
             });
         }
 
@@ -180,13 +202,17 @@ describe('i18n.rest', function () {
         }
 
         describe('given required context fields', function() {
+            var key;
+
             beforeEach(function() {
                 context.key = code;
                 context.message = translation;
+                key = 'api/i18n/translate?key=' + code;
             });
 
             describe('on execute', function() {
                 beforeEach(function() {
+                    i18nCache.put(key, 'old translation');
                     writer(context, presenter);
                 });
 
@@ -198,16 +224,23 @@ describe('i18n.rest', function () {
                         withCredentials:true
                     });
                 });
+
+                it('i18n cache is updated', function () {
+                    expect(i18nCache.get(key)).toEqual(translation);
+                });
             });
 
             describe('and optional context fields', function() {
+
                 beforeEach(function() {
                     context.namespace = namespace;
                     context.locale = locale;
+                    key = 'api/i18n/translate?namespace=' + namespace + '&key=' + code;
                 });
 
                 describe('on execute', function() {
                     beforeEach(function() {
+                        i18nCache.put(key, 'old translation');
                         writer(context, presenter);
                     });
 
@@ -218,6 +251,10 @@ describe('i18n.rest', function () {
                             data:{key: code, message: translation, namespace:namespace},
                             withCredentials:true
                         });
+                    });
+
+                    it('i18n cache is updated', function () {
+                        expect(i18nCache.get(key)).toEqual(translation);
                     });
                 });
             });
