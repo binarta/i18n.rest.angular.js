@@ -6,7 +6,6 @@ angular.module('i18n.gateways', [])
     .factory('i18nMessageWriter', ['$http', 'restServiceHandler', 'topicRegistry', '$cacheFactory', I18nMessageWriterFactory])
     .run(function(installRestDefaultHeaderMapper, topicRegistry, $cacheFactory) {
         var locale = 'default';
-        $cacheFactory('i18n');
         topicRegistry.subscribe('i18n.locale', function(msg) {
             locale = msg;
             $cacheFactory.get('i18n').removeAll();
