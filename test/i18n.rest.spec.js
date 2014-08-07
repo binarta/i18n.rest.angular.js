@@ -1,7 +1,6 @@
 describe('i18n.rest', function () {
     var $httpBackend, topics, http;
     var config;
-    var i18nCache;
 
     beforeEach(module('i18n.gateways'));
     beforeEach(module('rest.client'));
@@ -25,10 +24,6 @@ describe('i18n.rest', function () {
             expect(installRestDefaultHeaderMapper.calls[0].args[0]).toBeDefined();
         }));
 
-        it('i18n cache is initialized', inject(function ($cacheFactory) {
-            expect($cacheFactory.get('i18n')).toBeDefined();
-        }));
-
         describe('given locale is not broadcasted', function() {
             beforeEach(inject(function(installRestDefaultHeaderMapper) {
                 headers = {};
@@ -48,7 +43,6 @@ describe('i18n.rest', function () {
 
             beforeEach(inject(function(installRestDefaultHeaderMapper, topicRegistryMock) {
                 headers = {};
-                i18nCache.put('key', 'value');
 
                 topicRegistryMock['i18n.locale']('locale');
                 returnedHeaders = installRestDefaultHeaderMapper.calls[0].args[0](headers);
@@ -60,10 +54,6 @@ describe('i18n.rest', function () {
 
             it('then returned headers are source headers', function() {
                 expect(returnedHeaders).toEqual(headers);
-            });
-
-            it('then i18n cache is cleared', function () {
-                expect(i18nCache.info()).toEqual({id: 'i18n', size: 0});
             });
         });
 
@@ -122,14 +112,6 @@ describe('i18n.rest', function () {
                 reader(context, onSuccess, onError);
                 $httpBackend.flush();
                 expect(receivedError).toEqual(true);
-            });
-            it('requests should be cached', function () {
-                spyOn(http, 'get').andCallThrough();
-                $httpBackend.expect('GET', '').respond(200);
-                reader(context);
-                $httpBackend.flush();
-
-                expect(http.get.mostRecentCall.args[1].cache).toEqual(i18nCache);
             });
         }
 
@@ -212,7 +194,6 @@ describe('i18n.rest', function () {
 
             describe('on execute', function() {
                 beforeEach(function() {
-                    i18nCache.put(key, 'old translation');
                     writer(context, presenter);
                 });
 
@@ -223,10 +204,6 @@ describe('i18n.rest', function () {
                         data:{key: code, message: translation},
                         withCredentials:true
                     });
-                });
-
-                it('i18n cache is updated', function () {
-                    expect(i18nCache.get(key)).toEqual(translation);
                 });
             });
 
@@ -240,7 +217,6 @@ describe('i18n.rest', function () {
 
                 describe('on execute', function() {
                     beforeEach(function() {
-                        i18nCache.put(key, 'old translation');
                         writer(context, presenter);
                     });
 
@@ -251,10 +227,6 @@ describe('i18n.rest', function () {
                             data:{key: code, message: translation, namespace:namespace},
                             withCredentials:true
                         });
-                    });
-
-                    it('i18n cache is updated', function () {
-                        expect(i18nCache.get(key)).toEqual(translation);
                     });
                 });
             });
