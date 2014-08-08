@@ -113,6 +113,15 @@ describe('i18n.rest', function () {
                 $httpBackend.flush();
                 expect(receivedError).toEqual(true);
             });
+
+            it('test', function() {
+                context.locale = 'L';
+                $httpBackend.expect('GET', /.*/, /.*/, function(headers) {
+                    if (headers['Accept-Language'] == context.locale) return true;
+                }).respond(200, translation);
+                reader(context, onSuccess, onError);
+                $httpBackend.flush();
+            })
         }
 
         testHttpCallsWithPrefix('');

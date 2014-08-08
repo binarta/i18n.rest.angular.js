@@ -22,9 +22,11 @@ function I18nMessageReaderFactory(i18nFetchMessage, topicRegistry) {
     });
 
     return function (ctx, onSuccess, onError) {
+        var config = {};
+        if (ctx.locale) config.headers = {'Accept-Language':ctx.locale};
         i18nFetchMessage(baseUri + 'api/i18n/translate?' +
             (ctx.namespace ? 'namespace=' + ctx.namespace + '&' : '') +
-            'key=' + encodeURIComponent(ctx.code))
+            'key=' + encodeURIComponent(ctx.code), config)
             .success(function (it) {
                 if (onSuccess) onSuccess(it)
             })
@@ -35,8 +37,8 @@ function I18nMessageReaderFactory(i18nFetchMessage, topicRegistry) {
 }
 
 function I18nFetchMessageFactory($http) {
-    return function (uri) {
-        return $http.get(uri);
+    return function (uri, config) {
+        return $http.get(uri, config);
     }
 }
 
