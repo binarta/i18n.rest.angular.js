@@ -2,15 +2,20 @@ describe('i18n.rest', function () {
     var $httpBackend, topics, http;
     var config;
 
+    beforeEach(function () {
+        config = {};
+        module(function ($provide) {
+            $provide.value('config', config);
+        });
+    });
+
     beforeEach(module('i18n.gateways'));
     beforeEach(module('rest.client'));
     beforeEach(module('notifications'));
-    beforeEach(inject(function ($injector, topicRegistryMock, $http, $cacheFactory) {
+    beforeEach(inject(function ($injector, topicRegistryMock, $http) {
         $httpBackend = $injector.get('$httpBackend');
         topics = topicRegistryMock;
-        config  = {};
         http = $http;
-        i18nCache = $cacheFactory.get('i18n');
     }));
     afterEach(function () {
         $httpBackend.verifyNoOutstandingExpectation();
@@ -40,7 +45,6 @@ describe('i18n.rest', function () {
         });
 
         describe('given locale is broadcasted', function() {
-
             beforeEach(inject(function(installRestDefaultHeaderMapper, topicRegistryMock) {
                 headers = {};
 
@@ -54,6 +58,19 @@ describe('i18n.rest', function () {
 
             it('then returned headers are source headers', function() {
                 expect(returnedHeaders).toEqual(headers);
+            });
+        });
+
+        describe('given locale is already on header', function () {
+            beforeEach(inject(function(installRestDefaultHeaderMapper) {
+                headers = {
+                    'accept-language': 'foo'
+                };
+                returnedHeaders = installRestDefaultHeaderMapper.calls[0].args[0](headers);
+            }));
+
+            it('do not override with default locale', function () {
+                expect(headers['accept-language']).toEqual('foo');
             });
         });
 
@@ -81,10 +98,6 @@ describe('i18n.rest', function () {
             receivedError = false;
             context = {};
         }));
-
-        it('subscribes for config.initialized notifications', function () {
-            expect(topics['config.initialized']).toBeDefined();
-        });
 
         function testHttpCallsWithPrefix(prefix) {
             it('on execute perform GET request with the code', function () {
@@ -128,17 +141,12 @@ describe('i18n.rest', function () {
         describe('with config.initialized notification received', function () {
             beforeEach(function () {
                 config.baseUri = 'http://host/context/';
-                topics['config.initialized'](config);
             });
 
             testHttpCallsWithPrefix('http://host/context/');
         });
 
         describe('with config.initialized notification received without baseUri', function () {
-            beforeEach(function () {
-                topics['config.initialized'](config);
-            });
-
             testHttpCallsWithPrefix('');
         });
 
@@ -181,12 +189,8 @@ describe('i18n.rest', function () {
             context = {};
             presenter = {
                 success:onSuccess
-            }
+            };
         }));
-
-        it('subscribes for config.initialized notifications', function () {
-            expect(topics['config.initialized']).toBeDefined();
-        });
 
         function expectRestCallFor(ctx) {
             expect(rest.calls[0].args[0].params).toEqual(ctx);
@@ -262,17 +266,12 @@ describe('i18n.rest', function () {
         describe('with baseuri', function () {
             beforeEach(function () {
                 config.baseUri = 'http://host/context/';
-                topics['config.initialized'](config);
             });
 
             testHttpCallsWithPrefix('http://host/context/');
         });
 
         describe('without baseUri', function () {
-            beforeEach(function () {
-                topics['config.initialized'](config);
-            });
-
             testHttpCallsWithPrefix('');
         });
     });
