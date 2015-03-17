@@ -1,10 +1,10 @@
-angular.module('i18n.gateways', [])
+angular.module('i18n.gateways', ['config', 'rest.client'])
     .factory('i18nMessageReader', ['config', '$http', I18nMessageReaderFactory])
     .factory('i18nFetchMessage', ['$http', function ($http) {
         return I18nFetchMessageFactory($http)
     }])
     .factory('i18nMessageWriter', ['config', 'restServiceHandler', I18nMessageWriterFactory])
-    .run(function(installRestDefaultHeaderMapper, topicRegistry) {
+    .run(['installRestDefaultHeaderMapper', 'topicRegistry', function(installRestDefaultHeaderMapper, topicRegistry) {
         var locale = 'default';
         topicRegistry.subscribe('i18n.locale', function(msg) {
             locale = msg;
@@ -13,7 +13,7 @@ angular.module('i18n.gateways', [])
             if (!headers['accept-language']) headers['accept-language'] = locale;
             return headers;
         })
-    });
+    }]);
 
 function I18nMessageReaderFactory(config, $http) {
     return function (ctx, onSuccess, onError) {

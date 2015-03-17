@@ -1,3 +1,5 @@
+angular.module('config', []);
+
 describe('i18n.rest', function () {
     var $httpBackend, topics, http;
     var config;
