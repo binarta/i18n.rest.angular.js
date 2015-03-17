@@ -1,4 +1,4 @@
-angular.module('i18n.gateways', ['config', 'rest.client'])
+angular.module('i18n.gateways', ['config', 'rest.client', 'notifications'])
     .factory('i18nMessageReader', ['config', '$http', I18nMessageReaderFactory])
     .factory('i18nFetchMessage', ['$http', function ($http) {
         return I18nFetchMessageFactory($http)
