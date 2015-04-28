@@ -51,6 +51,7 @@ function I18nMessageWriterFactory(config, restServiceHandler) {
             data: payload,
             withCredentials: true
         };
+        if (ctx.locale) presenter.params.headers = {'accept-language': ctx.locale};
         restServiceHandler(presenter);
     }
 }
