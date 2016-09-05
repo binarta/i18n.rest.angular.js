@@ -7,15 +7,17 @@
   "dependencies": {
     "binarta.angularx": "0.*.*",
     "binarta.i18n.angular": "1.*.*",
-    "binarta.i18n.over.rest.angular": "0.*.*"
+    "binarta.i18n.over.rest.angular": "git@github.com:binarta/i18n.over.rest.angular.js#nws"
   },
-  "devDependencies": {
-  },
+  "devDependencies": {},
   "ignore": [
     "**/.*",
     "node_modules",
     "bower_components",
     "test",
     "tests"
-  ]
+  ],
+  "resolutions": {
+    "angular": "1.5.*"
+  }
 }
