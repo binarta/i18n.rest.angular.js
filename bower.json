@@ -6,7 +6,7 @@
   ],
   "dependencies": {
     "binarta.angularx": "0.*.*",
-    "binarta.i18n.angular": "1.*.*",
+    "binarta.i18n.angular": "2.*.*",
     "binarta.i18n.over.rest.angular": "0.*.*"
   },
   "devDependencies": {
